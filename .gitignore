@@ -7,3 +7,4 @@ site/daily/
 scraper_result.txt
 venv/
 .env
+docs/superpowers/
