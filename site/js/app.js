@@ -25,6 +25,9 @@
     slider.max = rows.length - 1;
     slider.value = selectedIndex;
 
+    // Detect mobile
+    const isMobile = window.innerWidth <= 600;
+
     // Geo map
     const geoChart = echarts.init(document.getElementById("geo-map"));
     const geoOption = {
@@ -32,7 +35,7 @@
             map: "taiwan-strait",
             roam: true,
             center: [121, 24],
-            zoom: 5,
+            zoom: isMobile ? 4 : 5,
             itemStyle: {
                 areaColor: "#e8e8e8",
                 borderColor: "#aaa",
@@ -49,7 +52,7 @@
                 coordinateSystem: "geo",
                 data: [],
                 symbol: "circle",
-                symbolSize: 12,
+                symbolSize: isMobile ? 16 : 12,
                 itemStyle: { color: "#e74c3c" },
                 tooltip: {
                     formatter: function (params) {
@@ -63,7 +66,7 @@
                 coordinateSystem: "geo",
                 data: [],
                 symbol: "diamond",
-                symbolSize: 12,
+                symbolSize: isMobile ? 16 : 12,
                 itemStyle: { color: "#3498db" },
                 tooltip: {
                     formatter: function (params) {
@@ -77,7 +80,7 @@
                 coordinateSystem: "geo",
                 data: [],
                 symbol: "diamond",
-                symbolSize: 10,
+                symbolSize: isMobile ? 14 : 10,
                 itemStyle: { color: "#85c1e9" },
                 tooltip: {
                     formatter: function (params) {
@@ -93,15 +96,16 @@
     const trendChart = echarts.init(document.getElementById("trend-chart"));
     const trendOption = {
         tooltip: { trigger: "axis" },
-        legend: { data: ["Aircraft", "Naval Vessels"], top: 0 },
+        legend: { data: ["Aircraft", "Naval Vessels"], top: 0, textStyle: { fontSize: isMobile ? 10 : 12 } },
+        grid: { left: isMobile ? 35 : 50, right: isMobile ? 35 : 50, bottom: isMobile ? 60 : 50, top: 30 },
         xAxis: {
             type: "category",
             data: rows.map((r) => r.date),
-            axisLabel: { rotate: 45, fontSize: 10 },
+            axisLabel: { rotate: 45, fontSize: isMobile ? 8 : 10 },
         },
         yAxis: [
-            { type: "value", name: "Aircraft", position: "left" },
-            { type: "value", name: "Vessels", position: "right" },
+            { type: "value", name: "Aircraft", position: "left", nameTextStyle: { fontSize: isMobile ? 9 : 12 } },
+            { type: "value", name: "Vessels", position: "right", nameTextStyle: { fontSize: isMobile ? 9 : 12 } },
         ],
         series: [
             {
@@ -212,8 +216,10 @@
         updateMapMarkers(daily ? daily.positions : null);
     }
 
-    // Events
+    // Events — slider works with both mouse drag and touch
     slider.addEventListener("input", (e) => selectDate(parseInt(e.target.value)));
+
+    // Chart click works on both desktop and mobile (ECharts handles touch internally)
     trendChart.on("click", (params) => selectDate(params.dataIndex));
 
     // Last updated
