@@ -117,9 +117,10 @@ taiwan-strait-monitor/
 ### Static Site
 
 - **Header:** Title, last updated timestamp, link to MND source
-- **Trend chart:** ECharts line chart showing daily aircraft sorties and vessel counts. X-axis = date, dual Y-axes.
-- **Map gallery:** Most recent route map displayed prominently, scrollable archive of past maps.
-- **Stats cards:** Current day's numbers (total aircraft, crossed median, vessels).
+- **Trend chart:** ECharts line chart showing daily aircraft sorties and vessel counts. X-axis = date, dual Y-axes. Clicking a point on the chart selects that date.
+- **Timeline slider:** A draggable date slider spanning the full data range. Dragging or clicking selects a date, which updates the map display and stats cards. The slider, trend chart, and stats cards stay in sync — selecting a date in any one updates the others.
+- **Map display:** Shows the route map for the currently selected date. Defaults to the most recent date on page load.
+- **Stats cards:** Aircraft total, crossed median, entered ADIZ, naval vessels, official vessels for the selected date.
 
 Data loading: `app.js` fetches `summary.csv` at page load and renders client-side. Map paths are derived from the date column using the convention `maps/YYYY-MM-DD.jpg`. ECharts loaded via CDN. No build step.
 
