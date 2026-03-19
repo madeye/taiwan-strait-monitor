@@ -47,6 +47,30 @@
         tooltip: { trigger: "item" },
         series: [
             {
+                name: "Median Line",
+                type: "lines",
+                coordinateSystem: "geo",
+                polyline: true,
+                silent: true,
+                lineStyle: {
+                    color: "#999",
+                    width: 1.5,
+                    type: "dashed",
+                },
+                data: [
+                    {
+                        coords: [
+                            [120.8, 26.0],
+                            [120.5, 25.0],
+                            [120.3, 24.0],
+                            [120.1, 23.0],
+                            [119.9, 22.5],
+                        ],
+                    },
+                ],
+                tooltip: { show: false },
+            },
+            {
                 name: "Aircraft",
                 type: "scatter",
                 coordinateSystem: "geo",

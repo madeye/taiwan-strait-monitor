@@ -1,6 +1,6 @@
 ZONE_CENTROIDS = {
     "north": (25.5, 121.0),
-    "central": (24.0, 120.5),
+    "central": (24.2, 119.8),
     "southwest": (22.5, 119.5),
     "southeast": (22.5, 121.5),
     "south": (22.0, 120.5),
