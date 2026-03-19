@@ -29,6 +29,40 @@ def _roc_to_iso(roc_year: int, month: int, day: int) -> str:
     return f"{year:04d}-{month:02d}-{day:02d}T06:00:00+08:00"
 
 
+def parse_list_page(html: str) -> list[dict]:
+    """Parse MND list page, returning report entries sorted newest-first."""
+    soup = BeautifulSoup(html, "lxml")
+    reports = []
+
+    for link in soup.find_all("a", href=re.compile(r"news/plaact/\d+")):
+        href = link.get("href", "")
+        id_match = re.search(r"plaact/(\d+)", href)
+        if not id_match:
+            continue
+
+        report_id = id_match.group(1)
+
+        # Date is in a child <div class="date"> element
+        date_div = link.find("div", class_="date")
+        if date_div:
+            date_str = parse_roc_date_compact(date_div.get_text(strip=True))
+        else:
+            # Fallback: scan parent text for compact date pattern
+            parent_text = link.parent.get_text() if link.parent else ""
+            date_match = re.search(r"(\d+\.\d+\.\d+)", parent_text)
+            date_str = parse_roc_date_compact(date_match.group(1)) if date_match else ""
+
+        url = href if href.startswith("/") else f"/{href}"
+
+        reports.append({
+            "id": report_id,
+            "date": date_str,
+            "url": url,
+        })
+
+    return reports
+
+
 def parse_detail_page(html: str) -> dict:
     """Parse MND detail page HTML into structured data."""
     soup = BeautifulSoup(html, "lxml")

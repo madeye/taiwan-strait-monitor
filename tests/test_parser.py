@@ -1,4 +1,4 @@
-from scraper.parser import parse_roc_date_compact, parse_roc_date_prose, parse_detail_page
+from scraper.parser import parse_roc_date_compact, parse_roc_date_prose, parse_detail_page, parse_list_page
 
 
 def test_parse_roc_date_compact():
@@ -34,3 +34,14 @@ def test_parse_detail_page():
     assert result["vessels"]["naval"] == 9
     assert result["vessels"]["official"] == 2
     assert result["map_image_url"].endswith(".JPG") or result["map_image_url"].endswith(".jpg")
+
+
+def test_parse_list_page():
+    html = (FIXTURES / "list_page.html").read_text(encoding="utf-8")
+    reports = parse_list_page(html)
+
+    assert len(reports) > 0
+    first = reports[0]
+    assert "id" in first
+    assert "date" in first
+    assert first["url"].startswith("/news/plaact/") or first["url"].startswith("news/plaact/")
