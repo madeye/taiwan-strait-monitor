@@ -1,0 +1,30 @@
+{
+  "date": "2026-02-24",
+  "period": {
+    "start": "2026-02-23T06:00:00+08:00",
+    "end": "2026-02-24T06:00:00+08:00"
+  },
+  "aircraft": {
+    "total": 0,
+    "crossed_median": 0,
+    "entered_adiz": 0,
+    "adiz_regions": []
+  },
+  "vessels": {
+    "naval": 5,
+    "official": 0
+  },
+  "map_image": "assets/maps/2026-02-24.jpg",
+  "positions": {
+    "source": "zones",
+    "aircraft": [],
+    "vessels": [
+      {
+        "lat": 24.5,
+        "lon": 120.5,
+        "type": "naval"
+      }
+    ]
+  },
+  "source_url": "https://www.mnd.gov.tw/news/plaact/86214"
+}
