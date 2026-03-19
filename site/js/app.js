@@ -1,23 +1,97 @@
 (async function () {
-    const resp = await fetch("summary.csv");
-    const text = await resp.text();
-    const rows = parseCSV(text);
+    // Parallel fetch: CSV + GeoJSON
+    const [csvResp, geoResp] = await Promise.all([
+        fetch("summary.csv"),
+        fetch("geo/taiwan-strait.json"),
+    ]);
+    const csvText = await csvResp.text();
+    const geoData = await geoResp.json();
+    const rows = parseCSV(csvText);
 
     if (rows.length === 0) {
         document.getElementById("last-updated").textContent = "No data available";
         return;
     }
 
-    let selectedIndex = rows.length - 1;
+    // Register map for ECharts geo
+    echarts.registerMap("taiwan-strait", geoData);
 
+    let selectedIndex = rows.length - 1;
+    const jsonCache = {};
+
+    // Timeline slider
     const slider = document.getElementById("timeline-slider");
     slider.min = 0;
     slider.max = rows.length - 1;
     slider.value = selectedIndex;
 
-    const chart = echarts.init(document.getElementById("trend-chart"), "dark");
-    const chartOption = {
-        backgroundColor: "transparent",
+    // Geo map
+    const geoChart = echarts.init(document.getElementById("geo-map"));
+    const geoOption = {
+        geo: {
+            map: "taiwan-strait",
+            roam: true,
+            center: [121, 24],
+            zoom: 5,
+            itemStyle: {
+                areaColor: "#e8e8e8",
+                borderColor: "#aaa",
+            },
+            emphasis: {
+                itemStyle: { areaColor: "#ddd" },
+            },
+        },
+        tooltip: { trigger: "item" },
+        series: [
+            {
+                name: "Aircraft",
+                type: "scatter",
+                coordinateSystem: "geo",
+                data: [],
+                symbol: "circle",
+                symbolSize: 12,
+                itemStyle: { color: "#e74c3c" },
+                tooltip: {
+                    formatter: function (params) {
+                        return "Aircraft: " + (params.data.label || "group");
+                    },
+                },
+            },
+            {
+                name: "Naval Vessels",
+                type: "scatter",
+                coordinateSystem: "geo",
+                data: [],
+                symbol: "diamond",
+                symbolSize: 12,
+                itemStyle: { color: "#3498db" },
+                tooltip: {
+                    formatter: function (params) {
+                        return "Naval Vessel";
+                    },
+                },
+            },
+            {
+                name: "Official Vessels",
+                type: "scatter",
+                coordinateSystem: "geo",
+                data: [],
+                symbol: "diamond",
+                symbolSize: 10,
+                itemStyle: { color: "#85c1e9" },
+                tooltip: {
+                    formatter: function (params) {
+                        return "Official Vessel";
+                    },
+                },
+            },
+        ],
+    };
+    geoChart.setOption(geoOption);
+
+    // Trend chart (light theme — no "dark" arg)
+    const trendChart = echarts.init(document.getElementById("trend-chart"));
+    const trendOption = {
         tooltip: { trigger: "axis" },
         legend: { data: ["Aircraft", "Naval Vessels"], top: 0 },
         xAxis: {
@@ -48,46 +122,111 @@
             },
         ],
     };
-    chart.setOption(chartOption);
+    trendChart.setOption(trendOption);
 
-    function selectDate(index) {
+    // Fetch daily JSON (with cache)
+    async function fetchDailyJSON(date) {
+        if (jsonCache[date]) return jsonCache[date];
+        try {
+            const resp = await fetch("daily/" + date + ".json");
+            if (!resp.ok) return null;
+            const data = await resp.json();
+            jsonCache[date] = data;
+            return data;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Update map markers from positions data
+    function updateMapMarkers(positions) {
+        const badge = document.getElementById("position-badge");
+
+        if (!positions) {
+            geoChart.setOption({
+                series: [
+                    { name: "Aircraft", data: [] },
+                    { name: "Naval Vessels", data: [] },
+                    { name: "Official Vessels", data: [] },
+                ],
+            });
+            badge.textContent = "No position data available";
+            return;
+        }
+
+        const aircraftData = (positions.aircraft || []).map((p) => ({
+            value: [p.lon, p.lat],
+            label: p.label,
+        }));
+
+        const navalData = (positions.vessels || [])
+            .filter((v) => v.type === "naval")
+            .map((p) => ({ value: [p.lon, p.lat] }));
+
+        const officialData = (positions.vessels || [])
+            .filter((v) => v.type === "official")
+            .map((p) => ({ value: [p.lon, p.lat] }));
+
+        geoChart.setOption({
+            series: [
+                { name: "Aircraft", data: aircraftData },
+                { name: "Naval Vessels", data: navalData },
+                { name: "Official Vessels", data: officialData },
+            ],
+        });
+
+        if (positions.source === "vision") {
+            badge.textContent = "Positions: AI-extracted";
+        } else if (positions.source === "zones") {
+            badge.textContent = "Positions: Estimated";
+        } else {
+            badge.textContent = "";
+        }
+    }
+
+    // Select date — update everything
+    async function selectDate(index) {
         selectedIndex = Math.max(0, Math.min(index, rows.length - 1));
         const row = rows[selectedIndex];
 
+        // Stats
         document.getElementById("stat-aircraft").textContent = row.aircraft_total;
         document.getElementById("stat-median").textContent = row.crossed_median;
         document.getElementById("stat-adiz").textContent = row.entered_adiz;
         document.getElementById("stat-naval").textContent = row.vessels_naval;
         document.getElementById("stat-official").textContent = row.vessels_official;
 
+        // Timeline
         slider.value = selectedIndex;
         document.getElementById("timeline-date").textContent = row.date;
 
-        document.getElementById("map-date").textContent = row.date;
-        const mapImg = document.getElementById("map-image");
-        if (row.map_image) {
-            mapImg.src = row.map_image;
-            mapImg.style.display = "";
-        } else {
-            mapImg.src = "";
-            mapImg.style.display = "none";
-        }
-
-        chart.dispatchAction({
+        // Trend chart tooltip
+        trendChart.dispatchAction({
             type: "showTip",
             seriesIndex: 0,
             dataIndex: selectedIndex,
         });
+
+        // Geo map — fetch daily JSON
+        const daily = await fetchDailyJSON(row.date);
+        updateMapMarkers(daily ? daily.positions : null);
     }
 
+    // Events
     slider.addEventListener("input", (e) => selectDate(parseInt(e.target.value)));
-    chart.on("click", (params) => selectDate(params.dataIndex));
+    trendChart.on("click", (params) => selectDate(params.dataIndex));
 
+    // Last updated
     const latest = rows[rows.length - 1];
     document.getElementById("last-updated").textContent = "Last updated: " + latest.date;
 
-    window.addEventListener("resize", () => chart.resize());
+    // Responsive
+    window.addEventListener("resize", () => {
+        trendChart.resize();
+        geoChart.resize();
+    });
 
+    // Initial render
     selectDate(selectedIndex);
 })();
 
