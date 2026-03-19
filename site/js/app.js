@@ -216,11 +216,49 @@
         updateMapMarkers(daily ? daily.positions : null);
     }
 
+    // Playback
+    const playBtn = document.getElementById("play-btn");
+    let playInterval = null;
+
+    function startPlayback() {
+        if (selectedIndex >= rows.length - 1) selectedIndex = -1; // restart from beginning
+        playBtn.textContent = "\u275A\u275A"; // pause icon
+        playBtn.classList.add("playing");
+        playInterval = setInterval(() => {
+            if (selectedIndex >= rows.length - 1) {
+                stopPlayback();
+                return;
+            }
+            selectDate(selectedIndex + 1);
+        }, 1000);
+    }
+
+    function stopPlayback() {
+        clearInterval(playInterval);
+        playInterval = null;
+        playBtn.textContent = "\u25B6"; // play icon
+        playBtn.classList.remove("playing");
+    }
+
+    playBtn.addEventListener("click", () => {
+        if (playInterval) {
+            stopPlayback();
+        } else {
+            startPlayback();
+        }
+    });
+
     // Events — slider works with both mouse drag and touch
-    slider.addEventListener("input", (e) => selectDate(parseInt(e.target.value)));
+    slider.addEventListener("input", (e) => {
+        if (playInterval) stopPlayback();
+        selectDate(parseInt(e.target.value));
+    });
 
     // Chart click works on both desktop and mobile (ECharts handles touch internally)
-    trendChart.on("click", (params) => selectDate(params.dataIndex));
+    trendChart.on("click", (params) => {
+        if (playInterval) stopPlayback();
+        selectDate(params.dataIndex);
+    });
 
     // Last updated
     const latest = rows[rows.length - 1];
