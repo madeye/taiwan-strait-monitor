@@ -1,5 +1,9 @@
+import warnings
+
 import requests
 from urllib.parse import urljoin
+
+warnings.filterwarnings("ignore", message="Unverified HTTPS request")
 
 BASE_URL = "https://www.mnd.gov.tw"
 LIST_URL = f"{BASE_URL}/PublishTable.aspx?Types=%E5%8D%B3%E6%99%82%E8%BB%8D%E4%BA%8B%E5%8B%95%E6%85%8B&title=%E5%9C%8B%E9%98%B2%E6%B6%88%E6%81%AF"
@@ -10,6 +14,7 @@ TIMEOUT = 30
 def _session() -> requests.Session:
     s = requests.Session()
     s.headers.update({"User-Agent": USER_AGENT})
+    s.verify = False  # MND cert missing Subject Key Identifier; Python 3.13 rejects it
     a = requests.adapters.HTTPAdapter(max_retries=3)
     s.mount("https://", a)
     return s
