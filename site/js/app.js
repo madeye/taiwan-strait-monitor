@@ -1,20 +1,13 @@
 (async function () {
-    // Parallel fetch: CSV + GeoJSON
-    const [csvResp, geoResp] = await Promise.all([
-        fetch("summary.csv"),
-        fetch("geo/taiwan-strait.json"),
-    ]);
+    // Fetch CSV
+    const csvResp = await fetch("summary.csv");
     const csvText = await csvResp.text();
-    const geoData = await geoResp.json();
     const rows = parseCSV(csvText);
 
     if (rows.length === 0) {
         document.getElementById("last-updated").textContent = "No data available";
         return;
     }
-
-    // Register map for ECharts geo
-    echarts.registerMap("taiwan-strait", geoData);
 
     let selectedIndex = rows.length - 1;
     const jsonCache = {};
@@ -28,94 +21,35 @@
     // Detect mobile
     const isMobile = window.innerWidth <= 600;
 
-    // Geo map
-    const geoChart = echarts.init(document.getElementById("geo-map"));
-    const geoOption = {
-        geo: {
-            map: "taiwan-strait",
-            roam: true,
-            center: [121, 24],
-            zoom: isMobile ? 4 : 5,
-            itemStyle: {
-                areaColor: "#e8e8e8",
-                borderColor: "#aaa",
-            },
-            emphasis: {
-                itemStyle: { areaColor: "#ddd" },
-            },
-        },
-        tooltip: { trigger: "item" },
-        series: [
-            {
-                name: "Median Line",
-                type: "lines",
-                coordinateSystem: "geo",
-                polyline: true,
-                silent: true,
-                lineStyle: {
-                    color: "#999",
-                    width: 1.5,
-                    type: "dashed",
-                },
-                data: [
-                    {
-                        // Official Davis Line coordinates (Taiwan MND, 2004)
-                        coords: [
-                            [121.383, 26.5],
-                            [119.983, 24.833],
-                            [117.85, 23.283],
-                        ],
-                    },
-                ],
-                tooltip: { show: false },
-            },
-            {
-                name: "Aircraft",
-                type: "scatter",
-                coordinateSystem: "geo",
-                data: [],
-                symbol: "circle",
-                symbolSize: isMobile ? 16 : 12,
-                itemStyle: { color: "#e74c3c" },
-                tooltip: {
-                    formatter: function (params) {
-                        return "Aircraft: " + (params.data.label || "group");
-                    },
-                },
-            },
-            {
-                name: "Naval Vessels",
-                type: "scatter",
-                coordinateSystem: "geo",
-                data: [],
-                symbol: "diamond",
-                symbolSize: isMobile ? 16 : 12,
-                itemStyle: { color: "#3498db" },
-                tooltip: {
-                    formatter: function (params) {
-                        return "Naval Vessel";
-                    },
-                },
-            },
-            {
-                name: "Official Vessels",
-                type: "scatter",
-                coordinateSystem: "geo",
-                data: [],
-                symbol: "diamond",
-                symbolSize: isMobile ? 14 : 10,
-                itemStyle: { color: "#85c1e9" },
-                tooltip: {
-                    formatter: function (params) {
-                        return "Official Vessel";
-                    },
-                },
-            },
-        ],
-    };
-    geoChart.setOption(geoOption);
+    // --- Leaflet Map ---
+    const map = L.map("geo-map", {
+        center: [24, 121],
+        zoom: isMobile ? 6 : 7,
+        zoomControl: !isMobile,
+    });
 
-    // Trend chart (light theme — no "dark" arg)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 12,
+        minZoom: 5,
+    }).addTo(map);
+
+    // Median line (Davis Line — Taiwan MND, 2004)
+    L.polyline(
+        [
+            [26.5, 121.383],
+            [24.833, 119.983],
+            [23.283, 117.85],
+        ],
+        { color: "#999", weight: 1.5, dashArray: "6 4", interactive: false }
+    ).addTo(map);
+
+    // Marker layers
+    const aircraftLayer = L.layerGroup().addTo(map);
+    const navalLayer = L.layerGroup().addTo(map);
+    const officialLayer = L.layerGroup().addTo(map);
+
+    // --- ECharts Trend Chart ---
     const trendChart = echarts.init(document.getElementById("trend-chart"));
     const trendOption = {
         tooltip: { trigger: "axis" },
@@ -168,39 +102,56 @@
     // Update map markers from positions data
     function updateMapMarkers(positions) {
         const badge = document.getElementById("position-badge");
+        aircraftLayer.clearLayers();
+        navalLayer.clearLayers();
+        officialLayer.clearLayers();
 
         if (!positions) {
-            geoChart.setOption({
-                series: [
-                    { name: "Aircraft", data: [] },
-                    { name: "Naval Vessels", data: [] },
-                    { name: "Official Vessels", data: [] },
-                ],
-            });
             badge.textContent = "No position data available";
             return;
         }
 
-        const aircraftData = (positions.aircraft || []).map((p) => ({
-            value: [p.lon, p.lat],
-            label: p.label,
-        }));
+        var markerSize = isMobile ? 8 : 6;
 
-        const navalData = (positions.vessels || [])
-            .filter((v) => v.type === "naval")
-            .map((p) => ({ value: [p.lon, p.lat] }));
-
-        const officialData = (positions.vessels || [])
-            .filter((v) => v.type === "official")
-            .map((p) => ({ value: [p.lon, p.lat] }));
-
-        geoChart.setOption({
-            series: [
-                { name: "Aircraft", data: aircraftData },
-                { name: "Naval Vessels", data: navalData },
-                { name: "Official Vessels", data: officialData },
-            ],
+        (positions.aircraft || []).forEach(function (p) {
+            L.circleMarker([p.lat, p.lon], {
+                radius: markerSize,
+                color: "#c0392b",
+                fillColor: "#e74c3c",
+                fillOpacity: 0.85,
+                weight: 1.5,
+            })
+                .bindTooltip("Aircraft: " + (p.label || "group"))
+                .addTo(aircraftLayer);
         });
+
+        (positions.vessels || [])
+            .filter(function (v) { return v.type === "naval"; })
+            .forEach(function (p) {
+                L.circleMarker([p.lat, p.lon], {
+                    radius: markerSize,
+                    color: "#2471a3",
+                    fillColor: "#3498db",
+                    fillOpacity: 0.85,
+                    weight: 1.5,
+                })
+                    .bindTooltip("Naval Vessel")
+                    .addTo(navalLayer);
+            });
+
+        (positions.vessels || [])
+            .filter(function (v) { return v.type === "official"; })
+            .forEach(function (p) {
+                L.circleMarker([p.lat, p.lon], {
+                    radius: markerSize - 1,
+                    color: "#5dade2",
+                    fillColor: "#85c1e9",
+                    fillOpacity: 0.85,
+                    weight: 1.5,
+                })
+                    .bindTooltip("Official Vessel")
+                    .addTo(officialLayer);
+            });
 
         if (positions.source === "vision") {
             badge.textContent = "Positions: AI-extracted";
@@ -244,8 +195,8 @@
     let playInterval = null;
 
     function startPlayback() {
-        if (selectedIndex >= rows.length - 1) selectedIndex = -1; // restart from beginning
-        playBtn.textContent = "\u275A\u275A"; // pause icon
+        if (selectedIndex >= rows.length - 1) selectedIndex = -1;
+        playBtn.textContent = "\u275A\u275A";
         playBtn.classList.add("playing");
         playInterval = setInterval(() => {
             if (selectedIndex >= rows.length - 1) {
@@ -259,7 +210,7 @@
     function stopPlayback() {
         clearInterval(playInterval);
         playInterval = null;
-        playBtn.textContent = "\u25B6"; // play icon
+        playBtn.textContent = "\u25B6";
         playBtn.classList.remove("playing");
     }
 
@@ -271,13 +222,12 @@
         }
     });
 
-    // Events — slider works with both mouse drag and touch
+    // Events
     slider.addEventListener("input", (e) => {
         if (playInterval) stopPlayback();
         selectDate(parseInt(e.target.value));
     });
 
-    // Chart click works on both desktop and mobile (ECharts handles touch internally)
     trendChart.on("click", (params) => {
         if (playInterval) stopPlayback();
         selectDate(params.dataIndex);
@@ -290,7 +240,7 @@
     // Responsive
     window.addEventListener("resize", () => {
         trendChart.resize();
-        geoChart.resize();
+        map.invalidateSize();
     });
 
     // Initial render
