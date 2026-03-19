@@ -141,7 +141,7 @@ Map configuration:
 
 - **Center:** ~24°N, 121°E
 - **Zoom:** covers Taiwan Strait from Fujian to east of Taiwan
-- **Base map:** Light gray landmass on dark background (matches existing dark theme)
+- **Base map:** Light theme — colored landmass on white/light background
 
 **Marker layers (ECharts scatter series on geo):**
 
@@ -192,9 +192,9 @@ Historical backfill is a future enhancement.
 | `scraper/zones.py` | New: zone-based fallback positions |
 | `scraper/main.py` | Modify: add vision/zone step after parse |
 | `requirements.txt` | Modify: add `openai` |
-| `site/js/app.js` | Modify: add geo map, fetch daily JSON, update markers on date select |
+| `site/js/app.js` | Modify: add geo map, fetch daily JSON, update markers on date select, switch ECharts from `"dark"` theme to default (light) |
 | `site/index.html` | Modify: replace static img with map div, add source badge |
-| `site/css/style.css` | Modify: style the map container and source badge |
+| `site/css/style.css` | Modify: switch entire dashboard from dark to light theme, style map container and source badge |
 | `site/geo/taiwan-strait.json` | New: GeoJSON for the map |
 | `Makefile` | Modify: copy daily JSON to site/ in build target |
 | `.gitignore` | Modify: add `site/daily/` |
