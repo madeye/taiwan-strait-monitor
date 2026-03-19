@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taiwan Strait Monitor</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Taiwan Strait Monitor</h1>
+        <p id="last-updated">Loading...</p>
+        <a href="https://www.mnd.gov.tw/PublishTable.aspx?Types=%E5%8D%B3%E6%99%82%E8%BB%8D%E4%BA%8B%E5%8B%95%E6%85%8B&title=%E5%9C%8B%E9%98%B2%E6%B6%88%E6%81%AF"
+           target="_blank" rel="noopener">MND Source</a>
+    </header>
+
+    <main>
+        <section id="stats">
+            <div class="card">
+                <span class="card-value" id="stat-aircraft">-</span>
+                <span class="card-label">Aircraft</span>
+            </div>
+            <div class="card">
+                <span class="card-value" id="stat-median">-</span>
+                <span class="card-label">Crossed Median</span>
+            </div>
+            <div class="card">
+                <span class="card-value" id="stat-adiz">-</span>
+                <span class="card-label">Entered ADIZ</span>
+            </div>
+            <div class="card">
+                <span class="card-value" id="stat-naval">-</span>
+                <span class="card-label">Naval Vessels</span>
+            </div>
+            <div class="card">
+                <span class="card-value" id="stat-official">-</span>
+                <span class="card-label">Official Vessels</span>
+            </div>
+        </section>
+
+        <section id="chart-container">
+            <div id="trend-chart"></div>
+        </section>
+
+        <section id="timeline-container">
+            <input type="range" id="timeline-slider" min="0" max="0" value="0">
+            <span id="timeline-date">-</span>
+        </section>
+
+        <section id="map-container">
+            <h2>Route Map — <span id="map-date">-</span></h2>
+            <img id="map-image" src="" alt="PLA activity route map">
+        </section>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
