@@ -14,7 +14,9 @@ TIMEOUT = 30
 def _session() -> requests.Session:
     s = requests.Session()
     s.headers.update({"User-Agent": USER_AGENT})
-    s.verify = False  # MND cert missing Subject Key Identifier; Python 3.13 rejects it
+    # TODO: revisit when MND fixes their cert (missing Subject Key Identifier).
+    # Python 3.13's stricter OpenSSL rejects it; 3.11 (used in CI) may be fine.
+    s.verify = False
     a = requests.adapters.HTTPAdapter(max_retries=3)
     s.mount("https://", a)
     return s

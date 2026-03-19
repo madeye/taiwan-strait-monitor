@@ -95,8 +95,9 @@ def parse_detail_page(html: str) -> dict:
     median_match = re.search(r"逾越中線[^（(）)0-9]*(\d+)架次", text)
     crossed_median = int(median_match.group(1)) if median_match else 0
 
-    # Extract entered ADIZ (same as crossed_median in this format)
-    entered_adiz = crossed_median
+    # Extract entered ADIZ: may differ from crossed_median
+    adiz_match = re.search(r"進入[^0-9]*空域(\d+)架次", text)
+    entered_adiz = int(adiz_match.group(1)) if adiz_match else crossed_median
 
     # Extract ADIZ regions
     adiz_regions = []
