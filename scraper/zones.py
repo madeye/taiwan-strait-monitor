@@ -1,13 +1,13 @@
 ZONE_CENTROIDS = {
     "north": (25.5, 121.0),
-    "central": (24.2, 119.8),
+    "central": (24.8, 120.0),  # near median line, opposite Taichung
     "southwest": (22.5, 119.5),
     "southeast": (22.5, 121.5),
     "south": (22.0, 120.5),
 }
 
-NAVAL_CENTROID = (24.5, 120.5)
-OFFICIAL_CENTROID = (24.3, 120.3)
+NAVAL_CENTROID = (24.8, 119.5)     # west of median line
+OFFICIAL_CENTROID = (24.5, 119.3)  # slightly south/west
 
 
 def estimate_positions(report: dict) -> dict:
