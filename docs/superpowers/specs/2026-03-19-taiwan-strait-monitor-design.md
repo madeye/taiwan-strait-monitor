@@ -97,7 +97,9 @@ taiwan-strait-monitor/
 ├── .github/
 │   └── workflows/
 │       └── scrape-and-deploy.yml
+├── Makefile              # Local dev commands: scrape, build, serve, clean
 ├── requirements.txt
+├── .gitignore            # Excludes site/maps/, site/summary.csv, __pycache__, etc.
 └── README.md
 ```
 
@@ -140,6 +142,29 @@ Data loading: `app.js` fetches `summary.csv` at page load and renders client-sid
 7. Deploy `site/` to GitHub Pages via `peaceiris/actions-gh-pages` (pushes to `gh-pages` branch)
 
 **Note:** `site/maps/` and `site/summary.csv` are not committed to `main` — they are build artifacts generated for the deploy step only.
+
+### Local Development
+
+A `Makefile` at the project root provides local equivalents of the CI pipeline:
+
+```makefile
+scrape:          # Run scraper (fetch latest MND data)
+build:           # Copy data assets into site/ for local preview
+serve:           # Build + start a local HTTP server (python -m http.server) in site/
+clean:           # Remove build artifacts from site/maps/ and site/summary.csv
+```
+
+**Usage:**
+
+```bash
+pip install -r requirements.txt
+make scrape   # fetch today's data
+make serve    # preview dashboard at http://localhost:8000
+```
+
+`make serve` runs `make build` first (copies `data/assets/maps/` and `data/summary.csv` into `site/`), then starts Python's built-in HTTP server. No extra dependencies needed.
+
+`site/maps/` and `site/summary.csv` are in `.gitignore` — they are always generated, never committed to `main`.
 
 ## Future Enhancements
 
