@@ -164,7 +164,7 @@ cd /Volumes/DATA/workspace/taiwan-strait-monitor && git add scraper/zones.py tes
 
 - [ ] **Step 0: Verify NVIDIA model ID**
 
-Before writing any code, verify the exact model ID `nvidia/nemotron-3-super-120b-a12b` exists at `https://build.nvidia.com/explore/discover`. If the ID is different, update the `MODEL` constant in the implementation below. The spec warns the user-provided ID may not match the catalog.
+Before writing any code, verify the exact model ID `moonshotai/kimi-k2.5` exists at `https://build.nvidia.com/explore/discover`. If the ID is different, update the `MODEL` constant in the implementation below. The spec warns the user-provided ID may not match the catalog.
 
 - [ ] **Step 1: Write failing tests for parsing and validation**
 
@@ -246,7 +246,7 @@ import re
 logger = logging.getLogger(__name__)
 
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-MODEL = "nvidia/nemotron-3-super-120b-a12b"
+MODEL = "moonshotai/kimi-k2.5"
 
 MIN_LAT, MAX_LAT = 21.5, 26.0
 MIN_LON, MAX_LON = 119.0, 122.5

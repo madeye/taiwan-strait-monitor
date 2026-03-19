@@ -67,7 +67,7 @@ When vision fails, fallback produces:
 
 Sends the route map image to NVIDIA Nemotron via the OpenAI-compatible API at `https://integrate.api.nvidia.com/v1/chat/completions`.
 
-**Model:** `nvidia/nemotron-3-super-120b-a12b` (verify exact model ID against the [NIM catalog](https://build.nvidia.com/explore/discover) before implementation — the ID may differ from user's initial specification).
+**Model:** `moonshotai/kimi-k2.5` (verify exact model ID against the [NIM catalog](https://build.nvidia.com/explore/discover) before implementation — the ID may differ from user's initial specification).
 
 **Auth:** `NVIDIA_API_KEY` environment variable. Locally from `.env` or shell env. In GitHub Actions, stored as a repository secret and explicitly passed to the scraper step via `env:`:
 
