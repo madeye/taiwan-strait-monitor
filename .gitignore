@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 site/maps/
 site/summary.csv
+site/daily/
 scraper_result.txt
 venv/
 .env
