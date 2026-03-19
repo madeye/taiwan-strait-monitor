@@ -68,31 +68,32 @@ def parse_detail_page(html: str) -> dict:
     soup = BeautifulSoup(html, "lxml")
     text = soup.get_text()
 
-    # Extract date period: "115年3月18日（星期三）0600時至115年3月19日（星期四）0600時止"
+    # Extract date period. Two formats:
+    # New: "115年3月18日...0600時至115年3月19日...0600時" (year in both dates)
+    # Old: "114年9月30日...0600時至10月1日...0600時"     (year only in first date)
     period_match = re.search(
-        r"(\d+)年(\d+)月(\d+)日[^至]*0600時至(\d+)年(\d+)月(\d+)日[^0-9]*0600時",
+        r"(\d+)年(\d+)月(\d+)日[^至]*0600時至(?:(\d+)年)?(\d+)月(\d+)日[^0-9]*0600時",
         text,
     )
     if not period_match:
         raise ValueError("Cannot find date period in detail page")
 
-    start_date = _roc_to_iso(
-        int(period_match.group(1)),
-        int(period_match.group(2)),
-        int(period_match.group(3)),
-    )
-    end_date = _roc_to_iso(
-        int(period_match.group(4)),
-        int(period_match.group(5)),
-        int(period_match.group(6)),
-    )
+    start_year = int(period_match.group(1))
+    start_month = int(period_match.group(2))
+    start_day = int(period_match.group(3))
+    end_year = int(period_match.group(4)) if period_match.group(4) else start_year
+    end_month = int(period_match.group(5))
+    end_day = int(period_match.group(6))
+
+    start_date = _roc_to_iso(start_year, start_month, start_day)
+    end_date = _roc_to_iso(end_year, end_month, end_day)
 
     # Extract aircraft count: "共機12架次"
     aircraft_match = re.search(r"共機(\d+)架次", text)
     aircraft_total = int(aircraft_match.group(1)) if aircraft_match else 0
 
     # Extract crossed median: "逾越中線...N架次" (inside parentheses)
-    median_match = re.search(r"逾越中線[^（(）)0-9]*(\d+)架次", text)
+    median_match = re.search(r"逾越(?:海峽)?中線[^（(）)0-9]*(\d+)架次", text)
     crossed_median = int(median_match.group(1)) if median_match else 0
 
     # Extract entered ADIZ: may differ from crossed_median
@@ -107,7 +108,7 @@ def parse_detail_page(html: str) -> dict:
         adiz_regions.append("central")
     if "西南" in text and "空域" in text:
         adiz_regions.append("southwest")
-    if "東南" in text and "空域" in text:
+    if ("東南" in text or "東部" in text) and "空域" in text:
         adiz_regions.append("southeast")
     if re.search(r"南部(?!.*西南)", text) and "空域" in text:
         adiz_regions.append("south")
