@@ -1,9 +1,9 @@
 ZONE_CENTROIDS = {
-    "north": (25.5, 121.0),
-    "central": (24.8, 120.0),  # near median line, opposite Taichung
+    "north": (25.5, 120.0),    # strait north of Taiwan
+    "central": (24.5, 119.0),  # mid-strait, west of median line
     "southwest": (22.5, 119.5),
     "southeast": (22.5, 121.5),
-    "south": (22.0, 120.5),
+    "south": (22.0, 120.0),    # south of Taiwan, in the strait
 }
 
 NAVAL_CENTROID = (24.8, 119.5)     # west of median line
