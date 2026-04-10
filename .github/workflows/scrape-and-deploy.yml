@@ -28,7 +28,7 @@ jobs:
 
       - name: Run scraper
         env:
-          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
         run: python -m scraper.main
 
       - name: Check for new data

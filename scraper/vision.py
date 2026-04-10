@@ -6,8 +6,8 @@ import re
 
 logger = logging.getLogger(__name__)
 
-NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-MODEL = "moonshotai/kimi-k2.5"
+MINIMAX_BASE_URL = "https://api.minimaxi.com/anthropic"
+MODEL = "MiniMax-M2.7"
 
 MIN_LAT, MAX_LAT = 21.5, 26.0
 MIN_LON, MAX_LON = 119.0, 122.5
@@ -85,13 +85,13 @@ def extract_positions(image_path: str) -> dict | None:
 
     Returns a positions dict with 'source': 'vision', or None on failure.
     """
-    api_key = os.environ.get("NVIDIA_API_KEY")
+    api_key = os.environ.get("MINIMAX_API_KEY")
     if not api_key:
-        logger.info("NVIDIA_API_KEY not set, skipping vision extraction")
+        logger.info("MINIMAX_API_KEY not set, skipping vision extraction")
         return None
 
     try:
-        from openai import OpenAI
+        import anthropic
 
         with open(image_path, "rb") as f:
             image_bytes = f.read()
@@ -99,27 +99,31 @@ def extract_positions(image_path: str) -> dict | None:
         mime_type = _detect_mime_type(image_bytes)
         b64_image = base64.b64encode(image_bytes).decode("utf-8")
 
-        client = OpenAI(base_url=NVIDIA_BASE_URL, api_key=api_key)
+        client = anthropic.Anthropic(base_url=MINIMAX_BASE_URL, api_key=api_key)
 
-        response = client.chat.completions.create(
+        response = client.messages.create(
             model=MODEL,
+            max_tokens=1024,
             messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": VISION_PROMPT},
                         {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:{mime_type};base64,{b64_image}"},
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": mime_type,
+                                "data": b64_image,
+                            },
                         },
+                        {"type": "text", "text": VISION_PROMPT},
                     ],
                 }
             ],
-            max_tokens=1024,
             temperature=0.1,
         )
 
-        raw_text = response.choices[0].message.content
+        raw_text = response.content[0].text
         parsed = parse_vision_response(raw_text)
         if parsed is None:
             return None
