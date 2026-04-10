@@ -51,3 +51,32 @@ def test_validate_positions_returns_none_when_all_filtered():
     }
     result = validate_positions(positions)
     assert result is None
+
+
+def test_parse_marker_response_valid():
+    raw = json.dumps({
+        "markers": [
+            {"id": 1, "type": "aircraft", "subtype": "fighter", "count": 5, "region": "north", "px": 480, "py": 350},
+            {"id": 2, "type": "aircraft", "subtype": "support", "count": 2, "region": "southwest", "px": 200, "py": 650},
+        ]
+    })
+    from scraper.vision import parse_marker_response
+    result = parse_marker_response(raw)
+    assert result is not None
+    assert len(result["markers"]) == 2
+    assert result["markers"][0]["type"] == "aircraft"
+    assert result["markers"][0]["px"] == 480
+
+
+def test_parse_marker_response_missing_markers_key():
+    from scraper.vision import parse_marker_response
+    result = parse_marker_response('{"data": []}')
+    assert result is None
+
+
+def test_parse_marker_response_with_fences():
+    raw = '```json\n{"markers": [{"id": 1, "type": "aircraft", "subtype": "fighter", "count": 5, "region": "north", "px": 480, "py": 350}]}\n```'
+    from scraper.vision import parse_marker_response
+    result = parse_marker_response(raw)
+    assert result is not None
+    assert len(result["markers"]) == 1

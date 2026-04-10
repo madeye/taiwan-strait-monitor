@@ -33,6 +33,49 @@ If you cannot identify positions, return: {"aircraft": [], "vessels": []}
 """
 
 
+MARKER_PROMPT = """You are analyzing a military activity route map of the Taiwan Strait region.
+This image is 720 pixels wide and 1040 pixels tall.
+
+Read the legend/table at the top-left of the map. Each numbered entry (①, ②, ③, etc.)
+describes a group of aircraft or vessels with their activity details.
+
+For each numbered marker visible on the map, report:
+- id: the marker number (1, 2, 3, etc.)
+- type: "aircraft" or "vessel"
+- subtype: e.g. "fighter", "support", "naval", "official"
+- count: number of units
+- region: approximate region ("north", "central", "southwest", "southeast", "south")
+- px: the marker's horizontal pixel position (0 = left edge, 720 = right edge)
+- py: the marker's vertical pixel position (0 = top edge, 1040 = bottom edge)
+
+Return ONLY a JSON object (no other text):
+{"markers": [{"id": 1, "type": "aircraft", "subtype": "fighter", "count": 5, "region": "north", "px": 480, "py": 350}, ...]}
+
+If you cannot identify markers, return: {"markers": []}
+"""
+
+
+def parse_marker_response(raw: str) -> dict | None:
+    """Parse the VLM marker identification response."""
+    if not raw:
+        return None
+
+    cleaned = re.sub(r"```(?:json)?\s*", "", raw).strip()
+    cleaned = cleaned.rstrip("`").strip()
+
+    try:
+        data = json.loads(cleaned)
+    except json.JSONDecodeError:
+        logger.warning("Failed to parse marker response as JSON")
+        return None
+
+    if "markers" not in data:
+        logger.warning("Marker response missing 'markers' key")
+        return None
+
+    return data
+
+
 def parse_vision_response(raw: str) -> dict | None:
     """Parse the vision model's text response into a positions dict."""
     if not raw:
