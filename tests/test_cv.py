@@ -70,3 +70,41 @@ def test_fallback_calibration():
     # Should be near 120E, 24N (center of strait)
     assert 119.0 < lon < 121.0
     assert 23.0 < lat < 25.0
+
+
+def test_calibrate_grid_degree_spacing():
+    """Verify that 1 degree longitude ~ 82px and 1 degree latitude ~ 89px."""
+    from scraper.cv import calibrate_grid
+
+    transform = calibrate_grid(str(FIXTURE_PATH))
+
+    # 1 degree longitude: check pixel spacing
+    _, lon_at_300 = transform.to_latlon(300, 500)
+    _, lon_at_382 = transform.to_latlon(382, 500)
+    lon_diff = lon_at_382 - lon_at_300
+    assert 0.8 < lon_diff < 1.2, f"82px should be ~1 deg lon, got {lon_diff:.2f}"
+
+    # 1 degree latitude: check pixel spacing
+    lat_at_500, _ = transform.to_latlon(360, 500)
+    lat_at_589, _ = transform.to_latlon(360, 589)
+    lat_diff = lat_at_500 - lat_at_589  # lat decreases as y increases
+    assert 0.8 < lat_diff < 1.2, f"89px should be ~1 deg lat, got {lat_diff:.2f}"
+
+
+def test_calibrate_grid_multiple_images():
+    """Test that calibration works on different date images if available."""
+    import pathlib
+    from scraper.cv import calibrate_grid
+
+    maps_dir = pathlib.Path("data/assets/maps")
+    if not maps_dir.exists():
+        pytest.skip("No maps directory")
+
+    images = sorted(maps_dir.glob("*.jpg"))[-3:]  # last 3
+    for img_path in images:
+        transform = calibrate_grid(str(img_path))
+        assert transform is not None
+        # Center should always be approximately 120E, 24N
+        lat, lon = transform.to_latlon(360, 520)
+        assert 119.0 < lon < 121.0, f"{img_path.name}: center lon={lon}"
+        assert 23.0 < lat < 26.0, f"{img_path.name}: center lat={lat}"
