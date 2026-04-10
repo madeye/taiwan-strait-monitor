@@ -158,13 +158,21 @@ def _detect_mime_type(image_bytes: bytes) -> str:
 
 
 def extract_positions(image_path: str) -> dict | None:
-    """Extract positions from a map image using vision API.
+    """Extract positions from a map image using CV grid calibration + VLM marker identification.
 
-    Returns a positions dict with 'source': 'vision', or None on failure.
+    Pipeline: CV calibration → VLM markers → merge.
+    Fallback chain: vision+cv → vision-only → None (caller falls back to zones).
     """
     api_key = os.environ.get("MINIMAX_API_KEY")
+
+    # Stage 1: CV grid calibration (always attempted)
+    from scraper.cv import calibrate_grid
+
+    transform = calibrate_grid(image_path)
+
+    # Stage 2: VLM marker identification
     if not api_key:
-        logger.info("MINIMAX_API_KEY not set, skipping vision extraction")
+        logger.info("MINIMAX_API_KEY not set, skipping VLM extraction")
         return None
 
     try:
@@ -193,7 +201,7 @@ def extract_positions(image_path: str) -> dict | None:
                                 "data": b64_image,
                             },
                         },
-                        {"type": "text", "text": VISION_PROMPT},
+                        {"type": "text", "text": MARKER_PROMPT},
                     ],
                 }
             ],
@@ -201,16 +209,25 @@ def extract_positions(image_path: str) -> dict | None:
         )
 
         raw_text = response.content[0].text
+
+        # Try CV+VLM path first (marker prompt with pixel positions)
+        marker_data = parse_marker_response(raw_text)
+        if marker_data and marker_data.get("markers") and transform:
+            positions = build_positions_from_markers(marker_data["markers"], transform)
+            validated = validate_positions(positions)
+            if validated:
+                validated["source"] = "vision+cv"
+                return validated
+
+        # Fallback: try parsing as legacy vision response (lat/lon from VLM)
         parsed = parse_vision_response(raw_text)
-        if parsed is None:
-            return None
+        if parsed:
+            validated = validate_positions(parsed)
+            if validated:
+                validated["source"] = "vision"
+                return validated
 
-        validated = validate_positions(parsed)
-        if validated is None:
-            return None
-
-        validated["source"] = "vision"
-        return validated
+        return None
 
     except Exception as e:
         logger.warning(f"Vision extraction failed: {e}")
