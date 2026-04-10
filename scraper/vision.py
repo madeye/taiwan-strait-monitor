@@ -76,6 +76,40 @@ def parse_marker_response(raw: str) -> dict | None:
     return data
 
 
+def build_positions_from_markers(markers: list[dict], transform) -> dict:
+    """Convert VLM marker data with pixel positions to lat/lon positions.
+
+    Uses the CV affine transform to convert pixel coords to geographic coords.
+    Filters out positions outside the Taiwan Strait bounding box.
+    """
+    aircraft = []
+    vessels = []
+
+    for m in markers:
+        px = m.get("px", 0)
+        py = m.get("py", 0)
+        lat, lon = transform.to_latlon(px, py)
+
+        if not (MIN_LAT <= lat <= MAX_LAT and MIN_LON <= lon <= MAX_LON):
+            logger.info(f"Marker {m.get('id')} at ({lat:.2f}, {lon:.2f}) outside bounds, skipping")
+            continue
+
+        if m.get("type") == "vessel":
+            vessels.append({
+                "lat": round(lat, 2),
+                "lon": round(lon, 2),
+                "type": m.get("subtype", "naval"),
+            })
+        else:
+            aircraft.append({
+                "lat": round(lat, 2),
+                "lon": round(lon, 2),
+                "label": m.get("subtype", m.get("region", "unknown")),
+            })
+
+    return {"aircraft": aircraft, "vessels": vessels}
+
+
 def parse_vision_response(raw: str) -> dict | None:
     """Parse the vision model's text response into a positions dict."""
     if not raw:

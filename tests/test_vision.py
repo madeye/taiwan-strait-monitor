@@ -80,3 +80,54 @@ def test_parse_marker_response_with_fences():
     result = parse_marker_response(raw)
     assert result is not None
     assert len(result["markers"]) == 1
+
+
+def test_build_positions_from_markers():
+    from scraper.cv import AffineTransform
+    from scraper.vision import build_positions_from_markers
+
+    transform = AffineTransform(
+        scale_x=0.01224, offset_x=115.49,
+        scale_y=-0.01126, offset_y=31.15,
+    )
+    markers = [
+        {"id": 1, "type": "aircraft", "subtype": "fighter", "count": 5, "region": "north", "px": 450, "py": 546},
+        {"id": 2, "type": "vessel", "subtype": "naval", "count": 7, "region": "southwest", "px": 368, "py": 812},
+    ]
+    result = build_positions_from_markers(markers, transform)
+
+    assert len(result["aircraft"]) == 1
+    assert len(result["vessels"]) == 1
+    assert 119.0 < result["aircraft"][0]["lon"] < 122.0
+    assert 23.0 < result["aircraft"][0]["lat"] < 28.0
+    assert result["aircraft"][0]["label"] == "fighter"
+    assert result["vessels"][0]["type"] == "naval"
+
+
+def test_build_positions_from_markers_empty():
+    from scraper.cv import AffineTransform
+    from scraper.vision import build_positions_from_markers
+
+    transform = AffineTransform(
+        scale_x=0.01224, offset_x=115.49,
+        scale_y=-0.01126, offset_y=31.15,
+    )
+    result = build_positions_from_markers([], transform)
+    assert result["aircraft"] == []
+    assert result["vessels"] == []
+
+
+def test_build_positions_filters_out_of_bounds():
+    from scraper.cv import AffineTransform
+    from scraper.vision import build_positions_from_markers
+
+    transform = AffineTransform(
+        scale_x=0.01224, offset_x=115.49,
+        scale_y=-0.01126, offset_y=31.15,
+    )
+    markers = [
+        {"id": 1, "type": "aircraft", "subtype": "fighter", "count": 1, "region": "north", "px": 0, "py": 0},
+    ]
+    result = build_positions_from_markers(markers, transform)
+    # px=0,py=0 maps to ~(115.5E, 31.2N) which is outside the bounding box
+    assert len(result["aircraft"]) == 0
