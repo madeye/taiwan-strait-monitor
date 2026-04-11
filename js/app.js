@@ -72,8 +72,6 @@
                 yAxisIndex: 0,
                 smooth: true,
                 symbolSize: 6,
-                itemStyle: { color: "#e74c3c" },
-                lineStyle: { color: "#e74c3c" },
             },
             {
                 name: "Naval Vessels",
@@ -82,8 +80,6 @@
                 yAxisIndex: 1,
                 smooth: true,
                 symbolSize: 6,
-                itemStyle: { color: "#3498db" },
-                lineStyle: { color: "#3498db" },
             },
         ],
     };
