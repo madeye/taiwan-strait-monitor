@@ -51,57 +51,18 @@
 
     // --- ECharts Trend Chart ---
     const trendChart = echarts.init(document.getElementById("trend-chart"));
-    const colors = {
-        aircraft: "#c23b33",
-        naval: "#246b9a",
-        axis: "#607080",
-        grid: "#d8e0e7",
-        text: "#17202a",
-    };
-
     const trendOption = {
-        color: [colors.aircraft, colors.naval],
-        tooltip: {
-            trigger: "axis",
-            backgroundColor: "rgba(255, 255, 255, 0.96)",
-            borderColor: "#d8e0e7",
-            borderWidth: 1,
-            textStyle: { color: colors.text, fontSize: 12 },
-            axisPointer: { type: "line", lineStyle: { color: "#8fa0ae", width: 1 } },
-        },
-        legend: {
-            data: ["Aircraft", "Naval Vessels"],
-            top: 0,
-            icon: "roundRect",
-            itemWidth: 14,
-            itemHeight: 8,
-            textStyle: { color: colors.axis, fontSize: isMobile ? 10 : 12, fontWeight: 600 },
-        },
-        grid: { left: isMobile ? 34 : 52, right: isMobile ? 34 : 52, bottom: isMobile ? 56 : 44, top: 34 },
+        tooltip: { trigger: "axis" },
+        legend: { data: ["Aircraft", "Naval Vessels"], top: 0, textStyle: { fontSize: isMobile ? 10 : 12 } },
+        grid: { left: isMobile ? 35 : 50, right: isMobile ? 35 : 50, bottom: isMobile ? 60 : 50, top: 30 },
         xAxis: {
             type: "category",
             data: rows.map((r) => r.date),
-            axisLabel: { rotate: 45, color: colors.axis, fontSize: isMobile ? 8 : 10 },
-            axisLine: { lineStyle: { color: "#b7c4cf" } },
-            axisTick: { lineStyle: { color: "#b7c4cf" } },
+            axisLabel: { rotate: 45, fontSize: isMobile ? 8 : 10 },
         },
         yAxis: [
-            {
-                type: "value",
-                name: "Aircraft",
-                position: "left",
-                nameTextStyle: { color: colors.axis, fontSize: isMobile ? 9 : 12, fontWeight: 600 },
-                axisLabel: { color: colors.axis },
-                splitLine: { lineStyle: { color: colors.grid } },
-            },
-            {
-                type: "value",
-                name: "Vessels",
-                position: "right",
-                nameTextStyle: { color: colors.axis, fontSize: isMobile ? 9 : 12, fontWeight: 600 },
-                axisLabel: { color: colors.axis },
-                splitLine: { show: false },
-            },
+            { type: "value", name: "Aircraft", position: "left", nameTextStyle: { fontSize: isMobile ? 9 : 12 } },
+            { type: "value", name: "Vessels", position: "right", nameTextStyle: { fontSize: isMobile ? 9 : 12 } },
         ],
         series: [
             {
@@ -110,11 +71,7 @@
                 data: rows.map((r) => r.aircraft_total),
                 yAxisIndex: 0,
                 smooth: true,
-                symbol: "circle",
-                symbolSize: 5,
-                itemStyle: { color: colors.aircraft },
-                lineStyle: { color: colors.aircraft, width: 2.5 },
-                emphasis: { focus: "series" },
+                symbolSize: 6,
             },
             {
                 name: "Naval Vessels",
@@ -122,11 +79,7 @@
                 data: rows.map((r) => r.vessels_naval),
                 yAxisIndex: 1,
                 smooth: true,
-                symbol: "circle",
-                symbolSize: 5,
-                itemStyle: { color: colors.naval },
-                lineStyle: { color: colors.naval, width: 2.5 },
-                emphasis: { focus: "series" },
+                symbolSize: 6,
             },
         ],
     };
@@ -163,10 +116,10 @@
         (positions.aircraft || []).forEach(function (p) {
             L.circleMarker([p.lat, p.lon], {
                 radius: markerSize,
-                color: "#8f2e28",
-                fillColor: "#c23b33",
-                fillOpacity: 0.88,
-                weight: 1.8,
+                color: "#c0392b",
+                fillColor: "#e74c3c",
+                fillOpacity: 0.85,
+                weight: 1.5,
             })
                 .bindTooltip("Aircraft: " + (p.label || "group"))
                 .addTo(aircraftLayer);
@@ -177,10 +130,10 @@
             .forEach(function (p) {
                 L.circleMarker([p.lat, p.lon], {
                     radius: markerSize,
-                    color: "#1c5276",
-                    fillColor: "#246b9a",
-                    fillOpacity: 0.88,
-                    weight: 1.8,
+                    color: "#2471a3",
+                    fillColor: "#3498db",
+                    fillOpacity: 0.85,
+                    weight: 1.5,
                 })
                     .bindTooltip("Naval Vessel")
                     .addTo(navalLayer);
@@ -191,19 +144,19 @@
             .forEach(function (p) {
                 L.circleMarker([p.lat, p.lon], {
                     radius: markerSize - 1,
-                    color: "#596775",
-                    fillColor: "#6f7f8f",
-                    fillOpacity: 0.86,
-                    weight: 1.8,
+                    color: "#5dade2",
+                    fillColor: "#85c1e9",
+                    fillOpacity: 0.85,
+                    weight: 1.5,
                 })
                     .bindTooltip("Official Vessel")
                     .addTo(officialLayer);
             });
 
         if (positions.source === "vision") {
-            badge.textContent = "AI-extracted approximate positions";
+            badge.textContent = "Positions: AI-extracted";
         } else if (positions.source === "zones") {
-            badge.textContent = "Zone-estimated approximate positions";
+            badge.textContent = "Positions: Estimated";
         } else {
             badge.textContent = "";
         }
@@ -225,10 +178,12 @@
         slider.value = selectedIndex;
         document.getElementById("timeline-date").textContent = row.date;
 
-        // Trend chart marker
-        trendChart.dispatchAction({ type: "downplay" });
-        trendChart.dispatchAction({ type: "highlight", seriesIndex: 0, dataIndex: selectedIndex });
-        trendChart.dispatchAction({ type: "highlight", seriesIndex: 1, dataIndex: selectedIndex });
+        // Trend chart tooltip
+        trendChart.dispatchAction({
+            type: "showTip",
+            seriesIndex: 0,
+            dataIndex: selectedIndex,
+        });
 
         // Geo map — fetch daily JSON
         const daily = await fetchDailyJSON(row.date);
@@ -242,7 +197,6 @@
     function startPlayback() {
         if (selectedIndex >= rows.length - 1) selectedIndex = -1;
         playBtn.textContent = "\u275A\u275A";
-        playBtn.setAttribute("aria-label", "Pause timeline");
         playBtn.classList.add("playing");
         playInterval = setInterval(() => {
             if (selectedIndex >= rows.length - 1) {
@@ -257,7 +211,6 @@
         clearInterval(playInterval);
         playInterval = null;
         playBtn.textContent = "\u25B6";
-        playBtn.setAttribute("aria-label", "Play timeline");
         playBtn.classList.remove("playing");
     }
 
