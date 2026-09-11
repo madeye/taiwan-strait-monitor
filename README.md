@@ -26,6 +26,14 @@ make scrape   # fetch latest MND data
 make serve    # preview dashboard at http://localhost:8000
 ```
 
+After changing fallback coordinates in `scraper/zones.py`, run
+`python -m scraper.refresh_zones` and then `make build` to refresh historical
+zone estimates and the site copies. The daily scraper skips existing reports.
+This refresh preserves report counts and AI-extracted positions.
+
+Zone markers are fixed illustrative points, including vessel placeholders based
+only on reported counts. They cannot establish distance to territorial waters.
+
 ## Project Structure
 
 ```
