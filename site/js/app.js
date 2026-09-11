@@ -159,6 +159,9 @@
         }
 
         var markerSize = isMobile ? 8 : 6;
+        const positionNote = positions.source === "zones"
+            ? " — illustrative zone estimate, not an observed location"
+            : " — AI-estimated approximate location";
 
         (positions.aircraft || []).forEach(function (p) {
             L.circleMarker([p.lat, p.lon], {
@@ -168,7 +171,7 @@
                 fillOpacity: 0.88,
                 weight: 1.8,
             })
-                .bindTooltip("Aircraft: " + (p.label || "group"))
+                .bindTooltip("Aircraft: " + (p.label || "group") + positionNote)
                 .addTo(aircraftLayer);
         });
 
@@ -182,7 +185,7 @@
                     fillOpacity: 0.88,
                     weight: 1.8,
                 })
-                    .bindTooltip("Naval Vessel")
+                    .bindTooltip("Naval Vessel" + positionNote)
                     .addTo(navalLayer);
             });
 
@@ -196,14 +199,14 @@
                     fillOpacity: 0.86,
                     weight: 1.8,
                 })
-                    .bindTooltip("Official Vessel")
+                    .bindTooltip("Official Vessel" + positionNote)
                     .addTo(officialLayer);
             });
 
-        if (positions.source === "vision") {
+        if (positions.source === "vision" || positions.source === "vision+cv") {
             badge.textContent = "AI-extracted approximate positions";
         } else if (positions.source === "zones") {
-            badge.textContent = "Zone-estimated approximate positions";
+            badge.textContent = "Illustrative zone estimates — not observed locations";
         } else {
             badge.textContent = "";
         }
