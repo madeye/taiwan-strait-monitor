@@ -25,12 +25,12 @@
     "aircraft": [
       {
         "lat": 25.5,
-        "lon": 121.0,
+        "lon": 120.0,
         "label": "north"
       },
       {
-        "lat": 24.0,
-        "lon": 120.5,
+        "lat": 24.5,
+        "lon": 119.0,
         "label": "central"
       },
       {
@@ -40,19 +40,19 @@
       },
       {
         "lat": 22.0,
-        "lon": 120.5,
+        "lon": 120.0,
         "label": "south"
       }
     ],
     "vessels": [
       {
-        "lat": 24.5,
-        "lon": 120.5,
+        "lat": 24.8,
+        "lon": 119.5,
         "type": "naval"
       },
       {
-        "lat": 24.3,
-        "lon": 120.3,
+        "lat": 24.5,
+        "lon": 119.3,
         "type": "official"
       }
     ]

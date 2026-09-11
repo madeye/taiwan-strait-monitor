@@ -22,7 +22,7 @@
     "aircraft": [
       {
         "lat": 22.0,
-        "lon": 120.5,
+        "lon": 120.0,
         "label": "south"
       }
     ],
@@ -39,5 +39,5 @@
       }
     ]
   },
-  "source_url": "https://www.mnd.gov.tw/news/plaact/86402"
+  "source_url": "https://www.mnd.gov.tw/news/plaact/86408"
 }

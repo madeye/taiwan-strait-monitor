@@ -34,13 +34,13 @@
     ],
     "vessels": [
       {
-        "lat": 24.5,
-        "lon": 120.5,
+        "lat": 24.8,
+        "lon": 119.5,
         "type": "naval"
       },
       {
-        "lat": 24.3,
-        "lon": 120.3,
+        "lat": 24.5,
+        "lon": 119.3,
         "type": "official"
       }
     ]
