@@ -28,19 +28,19 @@
       },
       {
         "lat": 22.0,
-        "lon": 120.0,
+        "lon": 120.5,
         "label": "south"
       }
     ],
     "vessels": [
       {
-        "lat": 24.8,
-        "lon": 119.5,
+        "lat": 24.5,
+        "lon": 120.5,
         "type": "naval"
       },
       {
-        "lat": 24.5,
-        "lon": 119.3,
+        "lat": 24.3,
+        "lon": 120.3,
         "type": "official"
       }
     ]

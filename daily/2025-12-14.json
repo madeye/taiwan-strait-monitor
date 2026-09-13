@@ -20,8 +20,8 @@
     "aircraft": [],
     "vessels": [
       {
-        "lat": 24.8,
-        "lon": 119.5,
+        "lat": 24.5,
+        "lon": 120.5,
         "type": "naval"
       }
     ]

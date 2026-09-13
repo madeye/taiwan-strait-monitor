@@ -4,80 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taiwan Strait Monitor</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 </head>
 <body>
-    <header class="app-header">
-        <div>
-            <p class="eyebrow">Open-source daily activity tracker</p>
-            <h1>Taiwan Strait Monitor</h1>
-        </div>
-        <div class="header-meta">
-            <p id="last-updated">Loading...</p>
-            <a href="https://www.mnd.gov.tw/PublishTable.aspx?Types=%E5%8D%B3%E6%99%82%E8%BB%8D%E4%BA%8B%E5%8B%95%E6%85%8B&title=%E5%9C%8B%E9%98%B2%E6%B6%88%E6%81%AF"
-               target="_blank" rel="noopener">MND Source</a>
-        </div>
+    <header>
+        <h1>Taiwan Strait Monitor</h1>
+        <p id="last-updated">Loading...</p>
+        <a href="https://www.mnd.gov.tw/PublishTable.aspx?Types=%E5%8D%B3%E6%99%82%E8%BB%8D%E4%BA%8B%E5%8B%95%E6%85%8B&title=%E5%9C%8B%E9%98%B2%E6%B6%88%E6%81%AF"
+           target="_blank" rel="noopener">MND Source</a>
     </header>
 
     <main>
-        <section id="stats" aria-label="Daily activity summary">
-            <div class="card card-aircraft">
+        <section id="stats">
+            <div class="card">
                 <span class="card-value" id="stat-aircraft">-</span>
                 <span class="card-label">Aircraft</span>
             </div>
-            <div class="card card-median">
+            <div class="card">
                 <span class="card-value" id="stat-median">-</span>
                 <span class="card-label">Crossed Median</span>
             </div>
-            <div class="card card-adiz">
+            <div class="card">
                 <span class="card-value" id="stat-adiz">-</span>
                 <span class="card-label">Entered ADIZ</span>
             </div>
-            <div class="card card-naval">
+            <div class="card">
                 <span class="card-value" id="stat-naval">-</span>
                 <span class="card-label">Naval Vessels</span>
             </div>
-            <div class="card card-official">
+            <div class="card">
                 <span class="card-value" id="stat-official">-</span>
                 <span class="card-label">Official Vessels</span>
             </div>
         </section>
 
-        <section id="geo-map-container" class="panel">
-            <div class="section-heading">
-                <div>
-                    <h2>Reported Positions</h2>
-                    <p id="position-badge">-</p>
-                </div>
-                <div class="map-legend" aria-label="Map legend">
-                    <span><i class="legend-dot aircraft-dot"></i>Aircraft</span>
-                    <span><i class="legend-dot naval-dot"></i>Naval</span>
-                    <span><i class="legend-dot official-dot"></i>Official</span>
-                </div>
-            </div>
+        <section id="geo-map-container">
             <div id="geo-map"></div>
+            <p id="position-badge">-</p>
         </section>
 
-        <section id="chart-container" class="panel">
-            <div class="section-heading">
-                <div>
-                    <h2>Activity Trend</h2>
-                    <p>Aircraft and naval vessel counts by report date</p>
-                </div>
-            </div>
+        <section id="chart-container">
             <div id="trend-chart"></div>
         </section>
 
-        <section id="timeline-container" aria-label="Timeline controls">
-            <button id="play-btn" title="Play/Pause" aria-label="Play timeline">&#9654;</button>
-            <div class="timeline-track">
-                <input type="range" id="timeline-slider" min="0" max="0" value="0" aria-label="Report date">
-            </div>
-            <time id="timeline-date">-</time>
+        <section id="timeline-container">
+            <button id="play-btn" title="Play/Pause">&#9654;</button>
+            <input type="range" id="timeline-slider" min="0" max="0" value="0">
+            <span id="timeline-date">-</span>
         </section>
     </main>
 

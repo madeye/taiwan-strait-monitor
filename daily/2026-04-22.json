@@ -1,0 +1,55 @@
+{
+  "date": "2026-04-22",
+  "period": {
+    "start": "2026-04-21T06:00:00+08:00",
+    "end": "2026-04-22T06:00:00+08:00"
+  },
+  "aircraft": {
+    "total": 6,
+    "crossed_median": 0,
+    "entered_adiz": 4,
+    "adiz_regions": [
+      "southwest",
+      "southeast",
+      "south"
+    ]
+  },
+  "vessels": {
+    "naval": 5,
+    "official": 1
+  },
+  "map_image": "assets/maps/2026-04-22.jpg",
+  "positions": {
+    "source": "zones",
+    "aircraft": [
+      {
+        "lat": 22.5,
+        "lon": 119.5,
+        "label": "southwest"
+      },
+      {
+        "lat": 22.5,
+        "lon": 121.5,
+        "label": "southeast"
+      },
+      {
+        "lat": 22.0,
+        "lon": 120.5,
+        "label": "south"
+      }
+    ],
+    "vessels": [
+      {
+        "lat": 24.8,
+        "lon": 119.5,
+        "type": "naval"
+      },
+      {
+        "lat": 24.5,
+        "lon": 119.3,
+        "type": "official"
+      }
+    ]
+  },
+  "source_url": "https://www.mnd.gov.tw/news/plaact/86502"
+}
